@@ -155,6 +155,84 @@
         .btn.exalt .dot { background: var(--accent-cyan); }
         .btn.chaos .dot { background: var(--accent-red); }
 
+        /* Summary Cards */
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .summary-card:hover {
+            border-color: var(--border-hover);
+            background: var(--bg-card-hover);
+        }
+
+        .summary-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .summary-pair {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .summary-right {
+            text-align: right;
+        }
+
+        .summary-value {
+            font-family: var(--font-mono);
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        .summary-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-top: 4px;
+        }
+
+        .summary-change.up {
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--accent-green);
+        }
+
+        .summary-change.down {
+            background: rgba(232, 93, 93, 0.1);
+            color: var(--accent-red);
+        }
+
         /* Main Layout */
         .container {
             max-width: 1200px;
@@ -449,6 +527,29 @@
     </div>
 
     <div class="container">
+        <div class="summary-row" id="summary-cards">
+            <div class="summary-card">
+                <div class="summary-left">
+                    <div class="summary-label">Exchange Rate</div>
+                    <div class="summary-pair">Divine / Exalt</div>
+                </div>
+                <div class="summary-right">
+                    <div class="summary-value" id="divine-exalt-value">--</div>
+                    <div class="summary-change" id="divine-exalt-change">--</div>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-left">
+                    <div class="summary-label">Exchange Rate</div>
+                    <div class="summary-pair">Chaos / Exalt</div>
+                </div>
+                <div class="summary-right">
+                    <div class="summary-value" id="chaos-exalt-value">--</div>
+                    <div class="summary-change" id="chaos-exalt-change">--</div>
+                </div>
+            </div>
+        </div>
+
         <div class="chart-card">
             <div class="chart-header">
                 <div>
@@ -524,6 +625,7 @@
                 pairsData = await response.json();
                 
                 renderMainChart();
+                updateSummaryCards();
                 updateStats();
                 
                 document.getElementById('last-update').textContent = 
@@ -532,6 +634,40 @@
                 console.error('Error loading data:', error);
                 document.getElementById('stats-container').innerHTML = 
                     `<div class="loading">Error: ${error.message}</div>`;
+            }
+        }
+
+        function updateSummaryCards() {
+            // Divine/Exalt
+            const divineExaltData = pairsData['Divine/Exalt'] || [];
+            if (divineExaltData.length > 0) {
+                const current = divineExaltData[divineExaltData.length - 1].y;
+                const dayAgoIndex = Math.max(0, divineExaltData.length - 97);
+                const previous = divineExaltData[dayAgoIndex].y;
+                const change = ((current - previous) / previous) * 100;
+                const isUp = change > 0;
+                
+                document.getElementById('divine-exalt-value').textContent = current.toFixed(2);
+                document.getElementById('divine-exalt-change').textContent = 
+                    `${isUp ? '▲' : '▼'} ${Math.abs(change).toFixed(2)}%`;
+                document.getElementById('divine-exalt-change').className = 
+                    `summary-change ${isUp ? 'up' : 'down'}`;
+            }
+            
+            // Chaos/Exalt
+            const chaosExaltData = pairsData['Chaos/Exalt'] || [];
+            if (chaosExaltData.length > 0) {
+                const current = chaosExaltData[chaosExaltData.length - 1].y;
+                const dayAgoIndex = Math.max(0, chaosExaltData.length - 97);
+                const previous = chaosExaltData[dayAgoIndex].y;
+                const change = ((current - previous) / previous) * 100;
+                const isUp = change > 0;
+                
+                document.getElementById('chaos-exalt-value').textContent = current.toFixed(2);
+                document.getElementById('chaos-exalt-change').textContent = 
+                    `${isUp ? '▲' : '▼'} ${Math.abs(change).toFixed(2)}%`;
+                document.getElementById('chaos-exalt-change').className = 
+                    `summary-change ${isUp ? 'up' : 'down'}`;
             }
         }
 
