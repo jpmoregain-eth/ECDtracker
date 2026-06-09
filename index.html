@@ -3,184 +3,514 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ECD Tracker - POE2 Currency</title>
+    <title>ECD Tracker — POE2 Currency Intelligence</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-primary: #0a0b0f;
+            --bg-secondary: #11131a;
+            --bg-card: #161821;
+            --bg-card-hover: #1c1f2a;
+            --border: #222633;
+            --border-hover: #2d3142;
+            --text-primary: #e8e9ec;
+            --text-secondary: #8b8f9e;
+            --text-muted: #5a5e6e;
+            --accent-gold: #d4a843;
+            --accent-gold-dim: #8a6d2a;
+            --accent-cyan: #3dd6d0;
+            --accent-red: #e85d5d;
+            --accent-green: #4ade80;
+            --font-main: 'Inter', -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0a0a0a;
-            color: #e0e0e0;
-            padding: 20px;
+            font-family: var(--font-main);
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
+            line-height: 1.5;
         }
+
+        /* Header */
         .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 32px 24px;
             text-align: center;
-            margin-bottom: 30px;
         }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(212, 168, 67, 0.1);
+            border: 1px solid rgba(212, 168, 67, 0.2);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 16px;
+        }
+
+        .header-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
         .header h1 {
-            color: #ffd700;
-            font-size: 2.5em;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-            margin-bottom: 10px;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #fff 0%, #d4a843 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .header p {
-            color: #888;
+
+        .header-sub {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 400;
         }
+
+        .header-meta {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .header-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Controls */
         .controls {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
+            gap: 8px;
+            padding: 24px;
+            background: var(--bg-primary);
         }
+
         .btn {
-            padding: 12px 24px;
-            border: 2px solid #333;
-            background: #1a1a1a;
-            color: #e0e0e0;
+            font-family: var(--font-main);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 20px;
             border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
             cursor: pointer;
-            font-size: 1em;
-            transition: all 0.3s;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
         .btn:hover {
-            border-color: #666;
-            background: #222;
+            border-color: var(--border-hover);
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
         }
+
         .btn.active {
-            border-color: #ffd700;
-            background: #2a2a1a;
-            color: #ffd700;
+            border-color: var(--accent-gold);
+            background: rgba(212, 168, 67, 0.08);
+            color: var(--accent-gold);
+            box-shadow: 0 0 20px rgba(212, 168, 67, 0.1);
         }
-        .btn.exalt { border-color: #4ecdc4; }
-        .btn.exalt.active { border-color: #4ecdc4; color: #4ecdc4; background: #1a2a2a; }
-        .btn.chaos { border-color: #ff6b6b; }
-        .btn.chaos.active { border-color: #ff6b6b; color: #ff6b6b; background: #2a1a1a; }
-        .chart-container {
-            max-width: 1200px;
-            margin: 0 auto 40px;
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #333;
+
+        .btn .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
         }
-        .chart-title {
-            text-align: center;
-            font-size: 1.3em;
-            margin-bottom: 15px;
-            color: #ffd700;
-        }
-        .chart-wrapper {
-            position: relative;
-            height: 400px;
-        }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+
+        .btn.divine .dot { background: var(--accent-gold); }
+        .btn.exalt .dot { background: var(--accent-cyan); }
+        .btn.chaos .dot { background: var(--accent-red); }
+
+        /* Main Layout */
+        .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0 24px 40px;
         }
-        .stat-card {
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #333;
-            text-align: center;
+
+        /* Chart Card */
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
         }
-        .stat-label {
-            color: #888;
-            font-size: 0.9em;
-            margin-bottom: 8px;
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
         }
-        .stat-change {
-            font-size: 0.9em;
-            margin-top: 5px;
+
+        .chart-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-top: 2px;
         }
-        .up { color: #00ff88; }
-        .down { color: #ff4444; }
-        .last-update {
-            text-align: center;
-            color: #666;
-            margin-top: 30px;
-            font-size: 0.9em;
+
+        .chart-badge {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(74, 222, 128, 0.2);
         }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #888;
+
+        .chart-wrapper {
+            position: relative;
+            height: 420px;
         }
-        .error {
-            text-align: center;
-            padding: 40px;
-            color: #ff4444;
-        }
-        .legend {
+
+        .chart-legend {
             display: flex;
             justify-content: center;
             gap: 20px;
-            margin-top: 15px;
+            margin-top: 16px;
             flex-wrap: wrap;
         }
+
         .legend-item {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.9em;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
         }
-        .legend-color {
+
+        .legend-line {
             width: 20px;
             height: 3px;
             border-radius: 2px;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 40px 0 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .section-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-hover);
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .stat-pair {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(212, 168, 67, 0.08);
+            color: var(--accent-gold);
+        }
+
+        .stat-value {
+            font-family: var(--font-mono);
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .stat-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .stat-change.up {
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--accent-green);
+        }
+
+        .stat-change.down {
+            background: rgba(232, 93, 93, 0.1);
+            color: var(--accent-red);
+        }
+
+        /* Premium Section */
+        .premium-section {
+            margin-top: 8px;
+        }
+
+        .premium-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .premium-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .premium-name {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .premium-price {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 32px 24px;
+            color: var(--text-muted);
+            font-size: 12px;
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+        }
+
+        .footer-time {
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 60px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 24px; }
+            .controls { flex-wrap: wrap; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .chart-wrapper { height: 300px; }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>💎 ECD Tracker</h1>
-        <p>Path of Exile 2 - Runes of Aldur League</p>
-        <p>Select baseline currency to view pair charts</p>
-        <p style="color: #666; font-size: 0.85em; margin-top: 5px;">📊 % Change compares current price vs 24 hours ago</p>
+        <div class="header-badge">Live Market Data</div>
+        <h1>ECD Tracker</h1>
+        <p class="header-sub">Path of Exile 2 — Runes of Aldur League</p>
+        <div class="header-meta">
+            <span>📊 24h Change</span>
+            <span>⏱️ 15m Intervals</span>
+            <span>🔄 Auto-refresh</span>
+        </div>
     </div>
 
     <div class="controls">
-        <button class="btn divine active" onclick="setBaseline('Divine')">Divine Orb</button>
-        <button class="btn exalt" onclick="setBaseline('Exalt')">Exalted Orb</button>
-        <button class="btn chaos" onclick="setBaseline('Chaos')">Chaos Orb</button>
+        <button class="btn divine active" onclick="setBaseline('Divine')">
+            <span class="dot"></span> Divine Orb
+        </button>
+        <button class="btn exalt" onclick="setBaseline('Exalt')">
+            <span class="dot"></span> Exalted Orb
+        </button>
+        <button class="btn chaos" onclick="setBaseline('Chaos')">
+            <span class="dot"></span> Chaos Orb
+        </button>
     </div>
 
-    <div class="chart-container">
-        <div class="chart-title" id="chart-title">Core Currencies vs Divine</div>
-        <div class="chart-wrapper">
-            <canvas id="main-chart"></canvas>
+    <div class="container">
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title" id="chart-title">Core Currencies</div>
+                    <div class="chart-subtitle">Price action vs baseline currency</div>
+                </div>
+                <div class="chart-badge">● LIVE</div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="main-chart"></canvas>
+            </div>
+            <div class="chart-legend" id="legend"></div>
         </div>
-        <div class="legend" id="legend"></div>
+
+        <div class="section-header">
+            <div class="section-icon" style="background: rgba(212, 168, 67, 0.1); color: var(--accent-gold);">💎</div>
+            <div>
+                <div class="section-title">Premium Currency Valuations</div>
+                <div class="section-subtitle">High-value items priced in core currencies</div>
+            </div>
+        </div>
+
+        <div id="stats-container">
+            <div class="loading">
+                <div class="spinner"></div>
+                Loading market data...
+            </div>
+        </div>
     </div>
 
-    <div class="stats" id="stats-container">
-        <!-- Stats will be populated here -->
+    <div class="footer">
+        <div>ECD Tracker — Professional POE2 Currency Intelligence</div>
+        <div class="footer-time" id="last-update">Last updated: --</div>
     </div>
-
-    <div class="last-update" id="last-update">Last updated: --</div>
 
     <script>
-        // Currency colors
         const colors = {
-            Divine: '#ffd700',
-            Exalt: '#4ecdc4',
-            Chaos: '#ff6b6b',
+            Divine: '#d4a843',
+            Exalt: '#3dd6d0',
+            Chaos: '#e85d5d',
             Annulment: '#95e1d3',
             Omen_Abyssal_Echoes: '#ff9f43',
             Omen_Whittling: '#ee5253',
             Omen_Light: '#feca57',
             Hinekoras_Lock: '#5f27cd',
             Mirror_Kalandra: '#00d2d3'
+        };
+
+        const premiumIcons = {
+            Omen_Abyssal_Echoes: '🔮',
+            Omen_Whittling: '⚔️',
+            Omen_Light: '✨',
+            Hinekoras_Lock: '🔒',
+            Mirror_Kalandra: '🪞'
+        };
+
+        const premiumNames = {
+            Omen_Abyssal_Echoes: 'Omen of Abyssal Echoes',
+            Omen_Whittling: 'Omen of Whittling',
+            Omen_Light: 'Omen of Light',
+            Hinekoras_Lock: "Hinekora's Lock",
+            Mirror_Kalandra: 'Mirror of Kalandra'
         };
 
         let currentBaseline = 'Divine';
@@ -190,10 +520,7 @@
         async function loadData() {
             try {
                 const response = await fetch('data/pairs.json');
-                if (!response.ok) {
-                    throw new Error('Data file not found');
-                }
-                
+                if (!response.ok) throw new Error('Data file not found');
                 pairsData = await response.json();
                 
                 renderMainChart();
@@ -203,8 +530,8 @@
                     `Last updated: ${new Date().toLocaleString()}`;
             } catch (error) {
                 console.error('Error loading data:', error);
-                document.getElementById('chart-title').textContent = 
-                    `Error: ${error.message}. Run generate_data.py first`;
+                document.getElementById('stats-container').innerHTML = 
+                    `<div class="loading">Error: ${error.message}</div>`;
             }
         }
 
@@ -213,63 +540,46 @@
             
             const chartConfig = {
                 type: 'line',
-                data: {
-                    datasets: datasets
-                },
+                data: { datasets },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: {
-                        intersect: false,
-                        mode: 'index'
-                    },
+                    interaction: { intersect: false, mode: 'index' },
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#1a1a1a',
-                            titleColor: '#ffd700',
-                            bodyColor: '#e0e0e0',
-                            borderColor: '#333',
+                            backgroundColor: '#161821',
+                            titleColor: '#d4a843',
+                            bodyColor: '#e8e9ec',
+                            borderColor: '#222633',
                             borderWidth: 1,
+                            padding: 12,
                             callbacks: {
-                                title: function(context) {
-                                    const date = new Date(context[0].parsed.x);
-                                    return date.toLocaleString();
-                                }
+                                title: (ctx) => new Date(ctx[0].parsed.x).toLocaleString()
                             }
                         }
                     },
                     scales: {
                         x: {
                             type: 'time',
-                            time: {
-                                unit: 'hour',
-                                displayFormats: {
-                                    hour: 'MMM dd HH:mm'
-                                }
-                            },
-                            grid: { color: '#333' },
-                            ticks: { color: '#888' }
+                            time: { unit: 'hour', displayFormats: { hour: 'MMM dd HH:mm' } },
+                            grid: { color: '#222633', drawBorder: false },
+                            ticks: { color: '#5a5e6e', font: { family: 'JetBrains Mono', size: 11 } }
                         },
                         y: {
-                            grid: { color: '#333' },
-                            ticks: { color: '#888' },
-                            title: {
-                                display: true,
-                                text: 'Rate (per 1 Baseline)',
-                                color: '#888'
-                            }
+                            grid: { color: '#222633', drawBorder: false },
+                            ticks: { 
+                                color: '#5a5e6e', 
+                                font: { family: 'JetBrains Mono', size: 11 },
+                                callback: (val) => val.toLocaleString()
+                            },
+                            title: { display: true, text: 'Rate (per 1 Baseline)', color: '#5a5e6e', font: { size: 11 } }
                         }
                     }
                 }
             };
             
-            if (isLogarithmic) {
-                chartConfig.options.scales.y.type = 'logarithmic';
-            }
-            
+            if (isLogarithmic) chartConfig.options.scales.y.type = 'logarithmic';
             return new Chart(ctx, chartConfig);
         }
 
@@ -280,46 +590,34 @@
                 const pairKey = `${currentBaseline}/${currency}`;
                 const pairData = pairsData[pairKey] || [];
                 
-                const parsedData = pairData.map(point => ({
-                    x: new Date(point.x),
-                    y: point.y
-                }));
-                
                 return {
                     label: `${currentBaseline}/${currency}`,
-                    data: parsedData,
+                    data: pairData.map(p => ({ x: new Date(p.x), y: p.y })),
                     borderColor: colors[currency],
-                    backgroundColor: colors[currency] + '10',
-                    fill: false,
+                    backgroundColor: colors[currency] + '15',
+                    fill: true,
                     tension: 0.4,
                     pointRadius: 0,
-                    pointHoverRadius: 6,
-                    borderWidth: 2
+                    pointHoverRadius: 5,
+                    borderWidth: 2.5
                 };
             });
             
-            if (mainChart) {
-                mainChart.destroy();
-            }
+            if (mainChart) mainChart.destroy();
             mainChart = createChart('main-chart', datasets, false);
             
-            // Update legend
-            const legendHtml = others.map(currency => `
+            document.getElementById('legend').innerHTML = others.map(currency => `
                 <div class="legend-item">
-                    <div class="legend-color" style="background: ${colors[currency]}"></div>
+                    <div class="legend-line" style="background: ${colors[currency]}"></div>
                     <span>${currentBaseline}/${currency}</span>
                 </div>
             `).join('');
             
-            document.getElementById('legend').innerHTML = legendHtml;
-            document.getElementById('chart-title').textContent = 
-                `Core Currencies vs ${currentBaseline}`;
+            document.getElementById('chart-title').textContent = `Core Currencies vs ${currentBaseline}`;
         }
 
         function updateStats() {
             const container = document.getElementById('stats-container');
-            
-            // Premium currencies to show prices in Chaos/Divine/Exalt
             const premiumCurrencies = [
                 { name: 'Omen_Abyssal_Echoes', display: 'Omen of Abyssal Echoes' },
                 { name: 'Omen_Whittling', display: 'Omen of Whittling' },
@@ -327,15 +625,29 @@
                 { name: 'Hinekoras_Lock', display: "Hinekora's Lock" },
                 { name: 'Mirror_Kalandra', display: 'Mirror of Kalandra' }
             ];
-            
-            // Core currencies to show prices in
             const coreCurrencies = ['Divine', 'Chaos', 'Exalt'];
             
             let html = '';
             
-            // For each premium currency, show its price in each core currency
             premiumCurrencies.forEach(premium => {
-                html += `<div style="grid-column: 1 / -1; text-align: center; margin: 20px 0 10px; color: ${colors[premium.name]}; font-size: 1.2em; font-weight: bold;">${premium.display}</div>`;
+                // Get the price in the current baseline currency
+                const baselinePair = `${premium.name}/${currentBaseline}`;
+                const baselineData = pairsData[baselinePair] || [];
+                const baselinePrice = baselineData.length > 0 ? baselineData[baselineData.length - 1].y : 0;
+                
+                html += `
+                    <div class="premium-section">
+                        <div class="premium-header">
+                            <div class="premium-icon" style="background: ${colors[premium.name]}15; color: ${colors[premium.name]};">
+                                ${premiumIcons[premium.name]}
+                            </div>
+                            <div>
+                                <div class="premium-name">${premium.display}</div>
+                                <div class="premium-price">1 ${premium.display} = ${baselinePrice.toLocaleString()} ${currentBaseline}</div>
+                            </div>
+                        </div>
+                        <div class="stats-grid">
+                `;
                 
                 coreCurrencies.forEach(core => {
                     const pairKey = `${premium.name}/${core}`;
@@ -346,18 +658,24 @@
                         const dayAgoIndex = Math.max(0, pairData.length - 97);
                         const previous = pairData[dayAgoIndex].y;
                         const change = ((current - previous) / previous) * 100;
-                        const changeClass = change > 0 ? 'up' : change < 0 ? 'down' : '';
-                        const arrow = change > 0 ? '▲' : change < 0 ? '▼' : '→';
+                        const isUp = change > 0;
                         
                         html += `
                             <div class="stat-card">
-                                <div class="stat-label">${premium.display} / ${core}</div>
-                                <div class="stat-value" style="color: ${colors[core]}">${current.toFixed(4)}</div>
-                                <div class="stat-change ${changeClass}">${arrow} ${Math.abs(change).toFixed(2)}%</div>
+                                <div class="stat-header">
+                                    <div class="stat-label">${core}</div>
+                                    <div class="stat-pair">1:${current.toLocaleString()}</div>
+                                </div>
+                                <div class="stat-value" style="color: ${colors[core]}">${current.toLocaleString()}</div>
+                                <div class="stat-change ${isUp ? 'up' : 'down'}">
+                                    ${isUp ? '▲' : '▼'} ${Math.abs(change).toFixed(2)}%
+                                </div>
                             </div>
                         `;
                     }
                 });
+                
+                html += `</div></div>`;
             });
             
             container.innerHTML = html;
@@ -375,13 +693,8 @@
             updateStats();
         }
 
-        // Initialize
         loadData();
-        
-        // Auto-refresh every 15 minutes
-        setInterval(() => {
-            loadData();
-        }, 900000);
+        setInterval(loadData, 900000);
     </script>
 </body>
 </html>
