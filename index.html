@@ -74,7 +74,7 @@
         }
         .chart-wrapper {
             position: relative;
-            height: 500px;
+            height: 400px;
         }
         .stats {
             display: grid;
@@ -145,7 +145,7 @@
     <div class="header">
         <h1>💎 ECD Tracker</h1>
         <p>Path of Exile 2 - Runes of Aldur League</p>
-        <p>Select baseline currency to view all pairs in one chart</p>
+        <p>Select baseline currency to view pair charts</p>
         <p style="color: #666; font-size: 0.85em; margin-top: 5px;">📊 % Change compares current price vs 24 hours ago</p>
     </div>
 
@@ -153,19 +153,22 @@
         <button class="btn divine active" onclick="setBaseline('Divine')">Divine Orb</button>
         <button class="btn exalt" onclick="setBaseline('Exalt')">Exalted Orb</button>
         <button class="btn chaos" onclick="setBaseline('Chaos')">Chaos Orb</button>
-        <button class="btn" style="border-color: #ff9f43; color: #ff9f43;" onclick="setBaseline('Omen_Abyssal_Echoes')">Omen Abyssal</button>
-        <button class="btn" style="border-color: #ee5253; color: #ee5253;" onclick="setBaseline('Omen_Whittling')">Omen Whittling</button>
-        <button class="btn" style="border-color: #feca57; color: #feca57;" onclick="setBaseline('Omen_Light')">Omen Light</button>
-        <button class="btn" style="border-color: #5f27cd; color: #5f27cd;" onclick="setBaseline('Hinekoras_Lock')">Hinekora's Lock</button>
-        <button class="btn" style="border-color: #00d2d3; color: #00d2d3;" onclick="setBaseline('Mirror_Kalandra')">Mirror Kalandra</button>
     </div>
 
     <div class="chart-container">
-        <div class="chart-title" id="chart-title">All Currencies vs Divine</div>
+        <div class="chart-title" id="chart-title">Core Currencies vs Divine</div>
         <div class="chart-wrapper">
             <canvas id="main-chart"></canvas>
         </div>
         <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="chart-container">
+        <div class="chart-title" id="chart-title-2">Premium Currencies vs Divine</div>
+        <div class="chart-wrapper">
+            <canvas id="premium-chart"></canvas>
+        </div>
+        <div class="legend" id="legend-2"></div>
     </div>
 
     <div class="stats" id="stats-container">
@@ -190,6 +193,7 @@
 
         let currentBaseline = 'Divine';
         let mainChart = null;
+        let premiumChart = null;
         let pairsData = {};
 
         async function loadData() {
@@ -201,7 +205,8 @@
                 
                 pairsData = await response.json();
                 
-                renderChart();
+                renderMainChart();
+                renderPremiumChart();
                 updateStats();
                 
                 document.getElementById('last-update').textContent = 
@@ -213,14 +218,10 @@
             }
         }
 
-        function createMainChart(datasets) {
-            const ctx = document.getElementById('main-chart').getContext('2d');
+        function createChart(canvasId, datasets, isLogarithmic = false) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
             
-            if (mainChart) {
-                mainChart.destroy();
-            }
-            
-            mainChart = new Chart(ctx, {
+            const chartConfig = {
                 type: 'line',
                 data: {
                     datasets: datasets
@@ -269,16 +270,21 @@
                                 display: true,
                                 text: 'Rate (per 1 Baseline)',
                                 color: '#888'
-                            },
-                            type: 'logarithmic'
+                            }
                         }
                     }
                 }
-            });
+            };
+            
+            if (isLogarithmic) {
+                chartConfig.options.scales.y.type = 'logarithmic';
+            }
+            
+            return new Chart(ctx, chartConfig);
         }
 
-        function renderChart() {
-            const others = ['Divine', 'Exalt', 'Chaos', 'Omen_Abyssal_Echoes', 'Omen_Whittling', 'Omen_Light', 'Hinekoras_Lock', 'Mirror_Kalandra'].filter(k => k !== currentBaseline);
+        function renderMainChart() {
+            const others = ['Divine', 'Exalt', 'Chaos'].filter(k => k !== currentBaseline);
             
             const datasets = others.map(currency => {
                 const pairKey = `${currentBaseline}/${currency}`;
@@ -302,7 +308,10 @@
                 };
             });
             
-            createMainChart(datasets);
+            if (mainChart) {
+                mainChart.destroy();
+            }
+            mainChart = createChart('main-chart', datasets, false);
             
             // Update legend
             const legendHtml = others.map(currency => `
@@ -314,12 +323,56 @@
             
             document.getElementById('legend').innerHTML = legendHtml;
             document.getElementById('chart-title').textContent = 
-                `All Currencies vs ${currentBaseline}`;
+                `Core Currencies vs ${currentBaseline}`;
+        }
+
+        function renderPremiumChart() {
+            const premiumCurrencies = ['Omen_Abyssal_Echoes', 'Omen_Whittling', 'Omen_Light', 'Hinekoras_Lock', 'Mirror_Kalandra'];
+            
+            const datasets = premiumCurrencies.map(currency => {
+                const pairKey = `${currentBaseline}/${currency}`;
+                const pairData = pairsData[pairKey] || [];
+                
+                const parsedData = pairData.map(point => ({
+                    x: new Date(point.x),
+                    y: point.y
+                }));
+                
+                return {
+                    label: `${currentBaseline}/${currency}`,
+                    data: parsedData,
+                    borderColor: colors[currency],
+                    backgroundColor: colors[currency] + '10',
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    borderWidth: 2
+                };
+            });
+            
+            if (premiumChart) {
+                premiumChart.destroy();
+            }
+            premiumChart = createChart('premium-chart', datasets, true);
+            
+            // Update legend
+            const legendHtml = premiumCurrencies.map(currency => `
+                <div class="legend-item">
+                    <div class="legend-color" style="background: ${colors[currency]}"></div>
+                    <span>${currentBaseline}/${currency}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('legend-2').innerHTML = legendHtml;
+            document.getElementById('chart-title-2').textContent = 
+                `Premium Currencies vs ${currentBaseline}`;
         }
 
         function updateStats() {
             const container = document.getElementById('stats-container');
-            const others = ['Divine', 'Exalt', 'Chaos', 'Omen_Abyssal_Echoes', 'Omen_Whittling', 'Omen_Light', 'Hinekoras_Lock', 'Mirror_Kalandra'].filter(k => k !== currentBaseline);
+            const allCurrencies = ['Divine', 'Exalt', 'Chaos', 'Omen_Abyssal_Echoes', 'Omen_Whittling', 'Omen_Light', 'Hinekoras_Lock', 'Mirror_Kalandra'];
+            const others = allCurrencies.filter(k => k !== currentBaseline);
             
             let html = '';
             others.forEach(currency => {
@@ -328,7 +381,6 @@
                 
                 if (pairData.length > 0) {
                     const current = pairData[pairData.length - 1].y;
-                    // Compare with data from ~24 hours ago (96 data points back at 15-min intervals)
                     const dayAgoIndex = Math.max(0, pairData.length - 97);
                     const previous = pairData[dayAgoIndex].y;
                     const change = ((current - previous) / previous) * 100;
@@ -356,7 +408,8 @@
             });
             document.querySelector(`.btn.${baseline.toLowerCase()}`).classList.add('active');
             
-            renderChart();
+            renderMainChart();
+            renderPremiumChart();
             updateStats();
         }
 
