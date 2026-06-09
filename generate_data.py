@@ -16,8 +16,8 @@ def generate_data():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     
-    # Get all prices from last 48 hours
-    cutoff = (datetime.now() - timedelta(hours=48)).timestamp()
+    # Get all prices from last 24 hours
+    cutoff = (datetime.now() - timedelta(hours=24)).timestamp()
     
     c.execute("""
         SELECT item, price, divine_price, timestamp, datetime 
@@ -33,28 +33,34 @@ def generate_data():
         print("No data in DB yet")
         return False
     
-    # Organize by currency
+    # Organize by currency - include ALL currencies with volume
     data = {
         "Divine": [],
         "Exalt": [],
         "Chaos": [],
-        "Annulment": []
+        "Annulment": [],
+        "Omen_Abyssal_Echoes": [],
+        "Omen_Whittling": [],
+        "Omen_Light": [],
+        "Hinekoras_Lock": [],
+        "Mirror_Kalandra": []
     }
     
-    for item, price, divine_price, timestamp, dt in rows:
+    for item, price, divine_price, quantity, timestamp, dt in rows:
         if item in data:
             data[item].append({
                 "x": dt,
                 "y": price,
-                "divine_price": divine_price
+                "divine_price": divine_price,
+                "volume": quantity or 0
             })
     
-    # Calculate pairs
+    # Calculate pairs for ALL currencies
     pairs = {}
-    currencies = ["Divine", "Exalt", "Chaos"]
+    all_currencies = ["Divine", "Exalt", "Chaos", "Annulment", "Omen_Abyssal_Echoes", "Omen_Whittling", "Omen_Light", "Hinekoras_Lock", "Mirror_Kalandra"]
     
-    for base in currencies:
-        for quote in currencies:
+    for base in all_currencies:
+        for quote in all_currencies:
             if base != quote:
                 pair_key = f"{base}/{quote}"
                 pairs[pair_key] = []
@@ -81,7 +87,8 @@ def generate_data():
     
     # Save latest snapshot
     latest = {}
-    for currency in currencies:
+    all_currencies = ["Divine", "Exalt", "Chaos", "Annulment", "Omen_Abyssal_Echoes", "Omen_Whittling", "Omen_Light", "Hinekoras_Lock", "Mirror_Kalandra"]
+    for currency in all_currencies:
         if data[currency]:
             latest[currency] = data[currency][-1]["y"]
     
