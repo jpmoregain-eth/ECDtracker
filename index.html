@@ -163,54 +163,6 @@
         <div class="legend" id="legend"></div>
     </div>
 
-    <div class="chart-container">
-        <div class="chart-title" id="chart-title-2">Premium Currencies vs Divine</div>
-        <div class="chart-wrapper">
-            <canvas id="premium-chart"></canvas>
-        </div>
-        <div class="legend" id="legend-2"></div>
-    </div>
-
-    <div class="chart-container">
-        <div class="chart-title" id="chart-title-omen-abyssal">Divine/Chaos/Exalt vs Omen of Abyssal Echoes</div>
-        <div class="chart-wrapper">
-            <canvas id="omen-abyssal-chart"></canvas>
-        </div>
-        <div class="legend" id="legend-omen-abyssal"></div>
-    </div>
-
-    <div class="chart-container">
-        <div class="chart-title" id="chart-title-omen-whittling">Divine/Chaos/Exalt vs Omen of Whittling</div>
-        <div class="chart-wrapper">
-            <canvas id="omen-whittling-chart"></canvas>
-        </div>
-        <div class="legend" id="legend-omen-whittling"></div>
-    </div>
-
-    <div class="chart-container">
-        <div class="chart-title" id="chart-title-omen-light">Divine/Chaos/Exalt vs Omen of Light</div>
-        <div class="chart-wrapper">
-            <canvas id="omen-light-chart"></canvas>
-        </div>
-        <div class="legend" id="legend-omen-light"></div>
-    </div>
-
-    <div class="chart-container">
-        <div class="chart-title" id="chart-title-hinekora">Divine/Chaos/Exalt vs Hinekora's Lock</div>
-        <div class="chart-wrapper">
-            <canvas id="hinekora-chart"></canvas>
-        </div>
-        <div class="legend" id="legend-hinekora"></div>
-    </div>
-
-    <div class="chart-container">
-        <div class="chart-title" id="chart-title-mirror">Divine/Chaos/Exalt vs Mirror of Kalandra</div>
-        <div class="chart-wrapper">
-            <canvas id="mirror-chart"></canvas>
-        </div>
-        <div class="legend" id="legend-mirror"></div>
-    </div>
-
     <div class="stats" id="stats-container">
         <!-- Stats will be populated here -->
     </div>
@@ -233,12 +185,6 @@
 
         let currentBaseline = 'Divine';
         let mainChart = null;
-        let premiumChart = null;
-        let omenAbyssalChart = null;
-        let omenWhittlingChart = null;
-        let omenLightChart = null;
-        let hinekoraChart = null;
-        let mirrorChart = null;
         let pairsData = {};
 
         async function loadData() {
@@ -251,8 +197,6 @@
                 pairsData = await response.json();
                 
                 renderMainChart();
-                renderPremiumChart();
-                renderIndividualCharts();
                 updateStats();
                 
                 document.getElementById('last-update').textContent = 
@@ -372,145 +316,48 @@
                 `Core Currencies vs ${currentBaseline}`;
         }
 
-        function renderPremiumChart() {
-            const premiumCurrencies = ['Omen_Abyssal_Echoes', 'Omen_Whittling', 'Omen_Light', 'Hinekoras_Lock', 'Mirror_Kalandra'];
-            
-            const datasets = premiumCurrencies.map(currency => {
-                const pairKey = `${currentBaseline}/${currency}`;
-                const pairData = pairsData[pairKey] || [];
-                
-                const parsedData = pairData.map(point => ({
-                    x: new Date(point.x),
-                    y: point.y
-                }));
-                
-                return {
-                    label: `${currentBaseline}/${currency}`,
-                    data: parsedData,
-                    borderColor: colors[currency],
-                    backgroundColor: colors[currency] + '10',
-                    fill: false,
-                    tension: 0.4,
-                    pointRadius: 0,
-                    pointHoverRadius: 6,
-                    borderWidth: 2
-                };
-            });
-            
-            if (premiumChart) {
-                premiumChart.destroy();
-            }
-            premiumChart = createChart('premium-chart', datasets, true);
-            
-            // Update legend
-            const legendHtml = premiumCurrencies.map(currency => `
-                <div class="legend-item">
-                    <div class="legend-color" style="background: ${colors[currency]}"></div>
-                    <span>${currentBaseline}/${currency}</span>
-                </div>
-            `).join('');
-            
-            document.getElementById('legend-2').innerHTML = legendHtml;
-            document.getElementById('chart-title-2').textContent = 
-                `Premium Currencies vs ${currentBaseline}`;
-        }
-
-        function renderIndividualChart(chartId, legendId, titleId, baseline, targetCurrencies) {
-            const datasets = targetCurrencies.map(currency => {
-                const pairKey = `${baseline}/${currency}`;
-                const pairData = pairsData[pairKey] || [];
-                
-                const parsedData = pairData.map(point => ({
-                    x: new Date(point.x),
-                    y: point.y
-                }));
-                
-                return {
-                    label: `${baseline}/${currency}`,
-                    data: parsedData,
-                    borderColor: colors[currency],
-                    backgroundColor: colors[currency] + '10',
-                    fill: false,
-                    tension: 0.4,
-                    pointRadius: 0,
-                    pointHoverRadius: 6,
-                    borderWidth: 2
-                };
-            });
-            
-            let chart = null;
-            switch(baseline) {
-                case 'Omen_Abyssal_Echoes':
-                    if (omenAbyssalChart) omenAbyssalChart.destroy();
-                    omenAbyssalChart = createChart(chartId, datasets, true);
-                    break;
-                case 'Omen_Whittling':
-                    if (omenWhittlingChart) omenWhittlingChart.destroy();
-                    omenWhittlingChart = createChart(chartId, datasets, true);
-                    break;
-                case 'Omen_Light':
-                    if (omenLightChart) omenLightChart.destroy();
-                    omenLightChart = createChart(chartId, datasets, true);
-                    break;
-                case 'Hinekoras_Lock':
-                    if (hinekoraChart) hinekoraChart.destroy();
-                    hinekoraChart = createChart(chartId, datasets, true);
-                    break;
-                case 'Mirror_Kalandra':
-                    if (mirrorChart) mirrorChart.destroy();
-                    mirrorChart = createChart(chartId, datasets, true);
-                    break;
-            }
-            
-            // Update legend
-            const legendHtml = targetCurrencies.map(currency => `
-                <div class="legend-item">
-                    <div class="legend-color" style="background: ${colors[currency]}"></div>
-                    <span>${baseline}/${currency}</span>
-                </div>
-            `).join('');
-            
-            document.getElementById(legendId).innerHTML = legendHtml;
-            document.getElementById(titleId).textContent = 
-                `Divine/Chaos/Exalt vs ${baseline}`;
-        }
-
-        function renderIndividualCharts() {
-            const coreCurrencies = ['Divine', 'Chaos', 'Exalt'];
-            
-            renderIndividualChart('omen-abyssal-chart', 'legend-omen-abyssal', 'chart-title-omen-abyssal', 'Omen_Abyssal_Echoes', coreCurrencies);
-            renderIndividualChart('omen-whittling-chart', 'legend-omen-whittling', 'chart-title-omen-whittling', 'Omen_Whittling', coreCurrencies);
-            renderIndividualChart('omen-light-chart', 'legend-omen-light', 'chart-title-omen-light', 'Omen_Light', coreCurrencies);
-            renderIndividualChart('hinekora-chart', 'legend-hinekora', 'chart-title-hinekora', 'Hinekoras_Lock', coreCurrencies);
-            renderIndividualChart('mirror-chart', 'legend-mirror', 'chart-title-mirror', 'Mirror_Kalandra', coreCurrencies);
-        }
-
         function updateStats() {
             const container = document.getElementById('stats-container');
-            const allCurrencies = ['Divine', 'Exalt', 'Chaos', 'Omen_Abyssal_Echoes', 'Omen_Whittling', 'Omen_Light', 'Hinekoras_Lock', 'Mirror_Kalandra'];
-            const others = allCurrencies.filter(k => k !== currentBaseline);
+            
+            // Premium currencies to show prices in Chaos/Divine/Exalt
+            const premiumCurrencies = [
+                { name: 'Omen_Abyssal_Echoes', display: 'Omen of Abyssal Echoes' },
+                { name: 'Omen_Whittling', display: 'Omen of Whittling' },
+                { name: 'Omen_Light', display: 'Omen of Light' },
+                { name: 'Hinekoras_Lock', display: "Hinekora's Lock" },
+                { name: 'Mirror_Kalandra', display: 'Mirror of Kalandra' }
+            ];
+            
+            // Core currencies to show prices in
+            const coreCurrencies = ['Divine', 'Chaos', 'Exalt'];
             
             let html = '';
-            others.forEach(currency => {
-                const pairKey = `${currentBaseline}/${currency}`;
-                const pairData = pairsData[pairKey] || [];
+            
+            // For each premium currency, show its price in each core currency
+            premiumCurrencies.forEach(premium => {
+                html += `<div style="grid-column: 1 / -1; text-align: center; margin: 20px 0 10px; color: ${colors[premium.name]}; font-size: 1.2em; font-weight: bold;">${premium.display}</div>`;
                 
-                if (pairData.length > 0) {
-                    const current = pairData[pairData.length - 1].y;
-                    const dayAgoIndex = Math.max(0, pairData.length - 97);
-                    const previous = pairData[dayAgoIndex].y;
-                    const change = ((current - previous) / previous) * 100;
-                    const changeClass = change > 0 ? 'up' : change < 0 ? 'down' : '';
-                    const arrow = change > 0 ? '▲' : change < 0 ? '▼' : '→';
+                coreCurrencies.forEach(core => {
+                    const pairKey = `${premium.name}/${core}`;
+                    const pairData = pairsData[pairKey] || [];
                     
-                    html += `
-                        <div class="stat-card">
-                            <div class="stat-label">${currentBaseline} / ${currency}</div>
-                            <div class="stat-value" style="color: ${colors[currency]}">${current.toFixed(4)}</div>
-                            <div class="stat-change ${changeClass}">${arrow} ${Math.abs(change).toFixed(2)}%</div>
-                        </div>
-                    `;
-                }
+                    if (pairData.length > 0) {
+                        const current = pairData[pairData.length - 1].y;
+                        const dayAgoIndex = Math.max(0, pairData.length - 97);
+                        const previous = pairData[dayAgoIndex].y;
+                        const change = ((current - previous) / previous) * 100;
+                        const changeClass = change > 0 ? 'up' : change < 0 ? 'down' : '';
+                        const arrow = change > 0 ? '▲' : change < 0 ? '▼' : '→';
+                        
+                        html += `
+                            <div class="stat-card">
+                                <div class="stat-label">${premium.display} / ${core}</div>
+                                <div class="stat-value" style="color: ${colors[core]}">${current.toFixed(4)}</div>
+                                <div class="stat-change ${changeClass}">${arrow} ${Math.abs(change).toFixed(2)}%</div>
+                            </div>
+                        `;
+                    }
+                });
             });
             
             container.innerHTML = html;
@@ -525,8 +372,6 @@
             document.querySelector(`.btn.${baseline.toLowerCase()}`).classList.add('active');
             
             renderMainChart();
-            renderPremiumChart();
-            renderIndividualCharts();
             updateStats();
         }
 
