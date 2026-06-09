@@ -146,6 +146,7 @@
         <h1>💎 ECD Tracker</h1>
         <p>Path of Exile 2 - Runes of Aldur League</p>
         <p>Select baseline currency to view all pairs in one chart</p>
+        <p style="color: #666; font-size: 0.85em; margin-top: 5px;">📊 % Change compares current price vs 24 hours ago</p>
     </div>
 
     <div class="controls">
@@ -316,9 +317,9 @@
                 
                 if (pairData.length > 0) {
                     const current = pairData[pairData.length - 1].y;
-                    // Compare with data from ~1 hour ago (4 data points back)
-                    const hourAgoIndex = Math.max(0, pairData.length - 5);
-                    const previous = pairData[hourAgoIndex].y;
+                    // Compare with data from ~24 hours ago (96 data points back at 15-min intervals)
+                    const dayAgoIndex = Math.max(0, pairData.length - 97);
+                    const previous = pairData[dayAgoIndex].y;
                     const change = ((current - previous) / previous) * 100;
                     const changeClass = change > 0 ? 'up' : change < 0 ? 'down' : '';
                     const arrow = change > 0 ? '▲' : change < 0 ? '▼' : '→';
