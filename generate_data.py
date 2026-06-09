@@ -46,13 +46,13 @@ def generate_data():
         "Mirror_Kalandra": []
     }
     
-    for item, price, divine_price, quantity, timestamp, dt in rows:
+    for item, price, divine_price, timestamp, dt in rows:
         if item in data:
             data[item].append({
                 "x": dt,
                 "y": price,
                 "divine_price": divine_price,
-                "volume": quantity or 0
+                "volume": 0
             })
     
     # Calculate pairs for ALL currencies
