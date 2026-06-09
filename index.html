@@ -233,6 +233,21 @@
             color: var(--accent-red);
         }
 
+        .premium-volume {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .premium-volume::before {
+            content: '📊';
+            font-size: 11px;
+        }
+
         /* Main Layout */
         .container {
             max-width: 1200px;
@@ -617,12 +632,17 @@
         let currentBaseline = 'Divine';
         let mainChart = null;
         let pairsData = {};
+        let pricesData = {};
 
         async function loadData() {
             try {
-                const response = await fetch('data/pairs.json');
-                if (!response.ok) throw new Error('Data file not found');
-                pairsData = await response.json();
+                const [pairsResponse, pricesResponse] = await Promise.all([
+                    fetch('data/pairs.json'),
+                    fetch('data/prices.json')
+                ]);
+                if (!pairsResponse.ok || !pricesResponse.ok) throw new Error('Data files not found');
+                pairsData = await pairsResponse.json();
+                pricesData = await pricesResponse.json();
                 
                 renderMainChart();
                 updateSummaryCards();
@@ -766,6 +786,10 @@
             let html = '';
             
             premiumCurrencies.forEach(premium => {
+                // Get latest volume from prices data
+                const priceHistory = pricesData[premium.name] || [];
+                const latestVolume = priceHistory.length > 0 ? (priceHistory[priceHistory.length - 1].volume || 0) : 0;
+                
                 // Get the price in the current baseline currency
                 const baselinePair = `${premium.name}/${currentBaseline}`;
                 const baselineData = pairsData[baselinePair] || [];
@@ -780,6 +804,7 @@
                             <div>
                                 <div class="premium-name">${premium.display}</div>
                                 <div class="premium-price">1 ${premium.display} = ${baselinePrice.toLocaleString()} ${currentBaseline}</div>
+                                ${latestVolume > 0 ? `<div class="premium-volume">Volume: ${latestVolume.toLocaleString()}</div>` : ''}
                             </div>
                         </div>
                         <div class="stats-grid">
