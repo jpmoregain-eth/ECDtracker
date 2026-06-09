@@ -1,0 +1,8 @@
+{
+  "name": "ecdtracker",
+  "version": "1.0.0",
+  "description": "POE2 Currency Price Tracker - Exalt, Chaos, Divine",
+  "scripts": {
+    "start": "npx serve ."
+  }
+}
