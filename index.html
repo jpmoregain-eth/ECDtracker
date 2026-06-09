@@ -153,6 +153,11 @@
         <button class="btn divine active" onclick="setBaseline('Divine')">Divine Orb</button>
         <button class="btn exalt" onclick="setBaseline('Exalt')">Exalted Orb</button>
         <button class="btn chaos" onclick="setBaseline('Chaos')">Chaos Orb</button>
+        <button class="btn" style="border-color: #ff9f43; color: #ff9f43;" onclick="setBaseline('Omen_Abyssal_Echoes')">Omen Abyssal</button>
+        <button class="btn" style="border-color: #ee5253; color: #ee5253;" onclick="setBaseline('Omen_Whittling')">Omen Whittling</button>
+        <button class="btn" style="border-color: #feca57; color: #feca57;" onclick="setBaseline('Omen_Light')">Omen Light</button>
+        <button class="btn" style="border-color: #5f27cd; color: #5f27cd;" onclick="setBaseline('Hinekoras_Lock')">Hinekora's Lock</button>
+        <button class="btn" style="border-color: #00d2d3; color: #00d2d3;" onclick="setBaseline('Mirror_Kalandra')">Mirror Kalandra</button>
     </div>
 
     <div class="chart-container">
@@ -175,7 +180,12 @@
             Divine: '#ffd700',
             Exalt: '#4ecdc4',
             Chaos: '#ff6b6b',
-            Annulment: '#95e1d3'
+            Annulment: '#95e1d3',
+            Omen_Abyssal_Echoes: '#ff9f43',
+            Omen_Whittling: '#ee5253',
+            Omen_Light: '#feca57',
+            Hinekoras_Lock: '#5f27cd',
+            Mirror_Kalandra: '#00d2d3'
         };
 
         let currentBaseline = 'Divine';
@@ -267,7 +277,7 @@
         }
 
         function renderChart() {
-            const others = ['Divine', 'Exalt', 'Chaos'].filter(k => k !== currentBaseline);
+            const others = ['Divine', 'Exalt', 'Chaos', 'Omen_Abyssal_Echoes', 'Omen_Whittling', 'Omen_Light', 'Hinekoras_Lock', 'Mirror_Kalandra'].filter(k => k !== currentBaseline);
             
             const datasets = others.map(currency => {
                 const pairKey = `${currentBaseline}/${currency}`;
@@ -308,7 +318,7 @@
 
         function updateStats() {
             const container = document.getElementById('stats-container');
-            const others = ['Divine', 'Exalt', 'Chaos'].filter(k => k !== currentBaseline);
+            const others = ['Divine', 'Exalt', 'Chaos', 'Omen_Abyssal_Echoes', 'Omen_Whittling', 'Omen_Light', 'Hinekoras_Lock', 'Mirror_Kalandra'].filter(k => k !== currentBaseline);
             
             let html = '';
             others.forEach(currency => {
