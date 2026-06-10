@@ -20,7 +20,7 @@ def generate_data():
     cutoff = (datetime.now() - timedelta(hours=24)).timestamp()
     
     c.execute("""
-        SELECT item, price, divine_price, timestamp, datetime 
+        SELECT item, price, divine_price, quantity, timestamp, datetime 
         FROM prices 
         WHERE timestamp > ? 
         ORDER BY timestamp
@@ -46,13 +46,13 @@ def generate_data():
         "Mirror_Kalandra": []
     }
     
-    for item, price, divine_price, timestamp, dt in rows:
+    for item, price, divine_price, quantity, timestamp, dt in rows:
         if item in data:
             data[item].append({
                 "x": dt,
                 "y": price,
                 "divine_price": divine_price,
-                "volume": 0
+                "volume": quantity or 0
             })
     
     # Calculate pairs for ALL currencies
