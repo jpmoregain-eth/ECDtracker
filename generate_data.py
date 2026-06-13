@@ -39,6 +39,9 @@ def generate_data():
         "Exalt": [],
         "Chaos": [],
         "Annulment": [],
+        "Fracturing_Orb": [],
+        "Omen_Sinistral_Annulment": [],
+        "Omen_Dextral_Annulment": [],
         "Omen_Abyssal_Echoes": [],
         "Omen_Whittling": [],
         "Omen_Light": [],
@@ -57,7 +60,7 @@ def generate_data():
     
     # Calculate pairs for ALL currencies
     pairs = {}
-    all_currencies = ["Divine", "Exalt", "Chaos", "Annulment", "Omen_Abyssal_Echoes", "Omen_Whittling", "Omen_Light", "Hinekoras_Lock", "Mirror_Kalandra"]
+    all_currencies = ["Divine", "Exalt", "Chaos", "Annulment", "Fracturing_Orb", "Omen_Sinistral_Annulment", "Omen_Dextral_Annulment", "Omen_Abyssal_Echoes", "Omen_Whittling", "Omen_Light", "Hinekoras_Lock", "Mirror_Kalandra"]
     
     for base in all_currencies:
         for quote in all_currencies:
@@ -87,7 +90,7 @@ def generate_data():
     
     # Save latest snapshot
     latest = {}
-    all_currencies = ["Divine", "Exalt", "Chaos", "Annulment", "Omen_Abyssal_Echoes", "Omen_Whittling", "Omen_Light", "Hinekoras_Lock", "Mirror_Kalandra"]
+    all_currencies = ["Divine", "Exalt", "Chaos", "Annulment", "Fracturing_Orb", "Omen_Sinistral_Annulment", "Omen_Dextral_Annulment", "Omen_Abyssal_Echoes", "Omen_Whittling", "Omen_Light", "Hinekoras_Lock", "Mirror_Kalandra"]
     for currency in all_currencies:
         if data[currency]:
             latest[currency] = data[currency][-1]["y"]
